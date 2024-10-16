@@ -1,0 +1,13 @@
+Wind Speed and Wind Gradient Formula: 
+
+##extracting variables from dataset
+u = dataset_wind['ucomp']
+v = dataset_wind['vcomp']
+d_dz_ucomp = dataset_wind[‘d_dz_ucomp’]
+d_dz_vcomp = dataset_wind[‘d_dz_vcomp’]
+
+##formula for wind speed and gradient: 
+wind_speed = np.sqrt(u**2 + v**2) #wind speed computation (ucomp, vcomp variables extracted from file)
+wind_grad_mag = np.sqrt(d_dz_ucomp**2 + d_dz_vcomp**2) * 1000 #wind gradient with file variables
+
+
