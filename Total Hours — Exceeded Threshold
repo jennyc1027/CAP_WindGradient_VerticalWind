@@ -1,0 +1,173 @@
+[Wind gradients — 2D]:
+import numpy as np
+import matplotlib.pyplot as plt
+import xarray as xr
+wind_file_path = '/Users/jenny/AmesCAP/mars_data/03180.atmos_daily_1SOL_zagl_to_diurn_T1000.nc'
+topography_file_path = '/Users/jenny/AmesCAP/mars_data/03180.fixed_SMALL.nc'
+ds_wind = xr.open_dataset(wind_file_path, decode_times=False)
+ds_topography = xr.open_dataset(topography_file_path, decode_times=False)
+lat = ds_wind['lat'].values
+lon = ds_wind['lon'].values
+zagl = ds_wind['zagl'].values
+altitude_value = 200 
+threshold = 50 
+d_dz_ucomp = ds_wind['d_dz_ucomp'].sel(zagl=altitude_value, method='nearest').isel(time=0).values
+d_dz_vcomp = ds_wind['d_dz_vcomp'].sel(zagl=altitude_value, method='nearest').isel(time=0).values 
+wind_grad_mag = np.sqrt(d_dz_ucomp**2 + d_dz_vcomp**2) * 1000
+exceeds_threshold = 2*np.sum(wind_grad_mag > threshold, axis=0)
+min_count = 1
+max_count = 24
+contour_levels = np.arange(min_count, max_count + 1)
+plt.figure(figsize=(12, 6))
+cmap = plt.get_cmap('Spectral_r')
+contourf = plt.contourf(lon, lat, exceeds_threshold, levels=contour_levels, cmap=cmap)
+cbar = plt.colorbar(contourf, label='hours where wind gradient > threshold', orientation='vertical')
+cbar.set_ticks(np.arange(min_count, max_count + 1, 1))
+zsurf = ds_topography['zsurf'].values
+contour_levels_topo = np.arange(-7266, 16798, 2500)
+plt.contour(lon, lat, zsurf, levels=contour_levels_topo, colors='black', linewidths=1.0)
+plt.ylim(-20, 20)
+plt.xlim(230, 320)
+plt.title(f'Total hours where wind gradient exceeds {threshold} m/s/km threshold; {altitude_value} m; 24 hrs')
+plt.xlabel('Longitude (deg)')
+plt.ylabel('Latitude (deg)')
+plt.show()
+
+
+[Vertical winds - 2D]: 
+import numpy as np
+import matplotlib.pyplot as plt
+import xarray as xr
+wind_file_path = '/Users/jenny/AmesCAP/mars_data/03180.atmos_daily_1SOL_zagl_to_diurn_T1000.nc'
+topography_file_path = '/Users/jenny/AmesCAP/mars_data/03180.fixed_SMALL.nc'
+ds_wind = xr.open_dataset(wind_file_path, decode_times=False)
+ds_topography = xr.open_dataset(topography_file_path, decode_times=False)
+lat = ds_wind['lat'].values
+lon = ds_wind['lon'].values
+zagl = ds_wind['zagl'].values
+altitude_value = 2000  # m
+threshold = 2 #m/s
+d_dz_ucomp = ds_wind['d_dz_ucomp'].sel(zagl=altitude_value, method='nearest').isel(time=0).values
+d_dz_vcomp = ds_wind['d_dz_vcomp'].sel(zagl=altitude_value, method='nearest').isel(time=0).values
+w = ds_wind['w'].sel(zagl=altitude_value, method='nearest').isel(time=0).values
+wind_grad_mag = np.sqrt(d_dz_ucomp**2 + d_dz_vcomp**2) * 1000
+exceeds_threshold = 2*np.sum(w > threshold, axis=0)
+min_count = 1
+max_count = 24
+contour_levels = np.arange(min_count, max_count + 1)
+plt.figure(figsize=(12, 6))
+cmap = plt.get_cmap('Spectral_r')
+contourf = plt.contourf(lon, lat, exceeds_threshold, levels=contour_levels, cmap=cmap)
+cbar = plt.colorbar(contourf, label='hours where vertical wind > threshold', orientation='vertical')
+cbar.set_ticks(np.arange(min_count, max_count + 1, 1))
+zsurf = ds_topography['zsurf'].values
+contour_levels_topo = np.arange(-7266, 16798, 2500)
+plt.contour(lon, lat, zsurf, levels=contour_levels_topo, colors='black', linewidths=1.0)
+plt.ylim(-20, 20)
+plt.xlim(230, 320)
+plt.title(f'Total hours where vertical wind exceeds {threshold} m/s threshold; {altitude_value} m; 24 hrs')
+plt.xlabel('Longitude (deg)')
+plt.ylabel('Latitude (deg)')
+plt.show()
+
+
+[Combined vertical winds/wind gradients]: 
+import numpy as np
+import matplotlib.pyplot as plt
+import xarray as xr
+wind_file_path = '/Users/jenny/AmesCAP/mars_data/03180.atmos_daily_1SOL_zagl_to_diurn_T1000.nc'
+topography_file_path = '/Users/jenny/AmesCAP/mars_data/03180.fixed_SMALL.nc'
+ds_wind = xr.open_dataset(wind_file_path, decode_times=False)
+ds_topography = xr.open_dataset(topography_file_path, decode_times=False)
+lat = ds_wind['lat'].values
+lon = ds_wind['lon'].values
+zagl = ds_wind['zagl'].values
+altitude_value1 = 5000  
+altitude_value2 = 100 
+threshold2 = 50
+threshold = 2
+d_dz_ucomp = ds_wind['d_dz_ucomp'].sel(zagl=altitude_value2, method='nearest').isel(time=0).values
+d_dz_vcomp = ds_wind['d_dz_vcomp'].sel(zagl=altitude_value2, method='nearest').isel(time=0).values
+w = ds_wind['w'].sel(zagl=altitude_value1, method='nearest').isel(time=0).values
+wind_grad_mag = np.sqrt(d_dz_ucomp**2 + d_dz_vcomp**2) * 1000
+exceeds_threshold = 2*np.sum(w > threshold, axis=0)
+exceeds_threshold2 = 2*np.sum(wind_grad_mag > threshold2, axis=0)
+exceeds_threshold3 = exceeds_threshold + exceeds_threshold2
+min_count = 1
+max_count = 24
+contour_levels = np.arange(min_count, max_count + 1)
+plt.figure(figsize=(12, 6))
+cmap = plt.get_cmap('Spectral_r')
+contourf = plt.contourf(lon, lat, exceeds_threshold3, levels=contour_levels, cmap=cmap)
+cbar = plt.colorbar(contourf, label='hours where vertical wind and wind gradient > threshold', orientation='vertical')
+cbar.set_ticks(np.arange(min_count, max_count + 1, 1))
+zsurf = ds_topography['zsurf'].values
+contour_levels_topo = np.arange(-7266, 16798, 2500)
+plt.contour(lon, lat, zsurf, levels=contour_levels_topo, colors='black', linewidths=1.0)
+plt.ylim(-20, 20)
+plt.xlim(230, 320)
+plt.title(f'Combined hours where vertical wind > {threshold} m/s ({altitude_value1} m AGL), wind gradient > {threshold2} m/s/km ({altitude_value2} m AGL); 24 hrs')
+plt.xlabel('Longitude (deg)')
+plt.ylabel('Latitude (deg)')
+plt.show()
+
+
+
+[Combined vertical winds/wind gradients - 1D]: 
+import numpy as np
+import xarray as xr
+import matplotlib.pyplot as plt
+wind_file_path = '/Users/jenny/AmesCAP/mars_data/03180.atmos_daily_1SOL_zagl_to_diurn_T1000.nc'
+ds_wind = xr.open_dataset(wind_file_path, decode_times=False)
+target_lat = 25
+target_lon = 240
+target_zagl = 100
+threshold = 50
+lat_wind = ds_wind['lat'].values
+lon_wind = ds_wind['lon'].values
+zagl_wind = ds_wind['zagl'].values
+time_of_day_wind = ds_wind['time_of_day_12'].values 
+d_dz_ucomp = ds_wind['d_dz_ucomp'].values
+d_dz_vcomp = ds_wind['d_dz_vcomp'].values
+d_dz_ucomp = np.clip(d_dz_ucomp, -1e10, 1e10)
+d_dz_vcomp = np.clip(d_dz_vcomp, -1e10, 1e10)
+wind_grad_mag = np.sqrt(d_dz_ucomp**2 + d_dz_vcomp**2) * 1000
+lat_idx_wind = np.argmin(np.abs(lat_wind - target_lat))
+lon_idx_wind = np.argmin(np.abs(lon_wind - target_lon))
+zagl_idx_wind = np.argmin(np.abs(zagl_wind - target_zagl))
+wind_grad_at_target = wind_grad_mag[0, :, zagl_idx_wind, lat_idx_wind, lon_idx_wind]
+vertical_wind_file_path = '/Users/jenny/AmesCAP/mars_data/03180.atmos_daily_1SOL_zagl_to_diurn_T1000.nc'
+ds_vertical_wind = xr.open_dataset(vertical_wind_file_path, decode_times=False)
+lat_vwind = ds_vertical_wind['lat'].values
+lon_vwind = ds_vertical_wind['lon'].values
+zagl_vwind = ds_vertical_wind['zagl'].values
+time_of_day_vwind = ds_vertical_wind['time_of_day_12'].values
+w = ds_vertical_wind['w'].values
+lat_idx_vwind = np.argmin(np.abs(lat_vwind - target_lat))
+lon_idx_vwind = np.argmin(np.abs(lon_vwind - target_lon))
+zagl_idx_vwind = np.argmin(np.abs(zagl_vwind - 5000))
+vertical_wind = w[0, :, zagl_idx_vwind, lat_idx_vwind, lon_idx_vwind]
+count_exceeds_threshold = np.sum(wind_grad_at_target > threshold)
+print(f"Counts exceeding threshold at latitude {target_lat}, longitude {target_lon}, altitude {target_zagl} m: {count_exceeds_threshold}")
+fig, axs = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+axs[0].plot(time_of_day_wind, wind_grad_at_target, marker='o', linestyle='-', label='Wind Gradient')
+axs[0].axhline(y=threshold, color='r', linestyle='--', label='Threshold 50 m/s/km')
+axs[0].set_ylabel('Wind Gradient (m/s/km)')
+axs[0].set_title(f'Wind Gradient at 100m; lat: {target_lat}; lon: {target_lon}')
+axs[0].legend()
+axs[0].grid(True)
+axs[1].plot(time_of_day_vwind, vertical_wind, marker='o', linestyle='-', label='Vertical Wind')
+axs[1].axhline(y=1, color='r', linestyle='--', label='Threshold 1 m/s')
+axs[1].set_xlabel('Time of Day (hrs)')
+axs[1].set_ylabel('Vertical Wind (m/s)')
+axs[1].set_title(f'Vertical Winds at 5000m;lat: {target_lat}; lon: {target_lon}')
+axs[1].legend()
+axs[1].grid(True)
+plt.tight_layout()
+plt.show()
+print("\nNumerical values for Wind Gradient at 100m:")
+print(f"Time of Day: {time_of_day_wind}")
+print(f"Wind Gradient: {wind_grad_at_target}")
+print("\nNumerical values for Vertical Wind at 5000m:")
+print(f"Time of Day: {time_of_day_vwind}")
+print(f"Vertical Wind: {vertical_wind}")
